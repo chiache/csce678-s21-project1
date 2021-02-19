@@ -1,11 +1,11 @@
 from basic_defs import NAS
 from cloud import RAID_on_Cloud, AWS_S3, Azure_Blob_Storage, Google_Cloud_Storage
+from hexdump import hexdump
 
 import argparse
 import os
 import sys
 import string
-import hexdump
 
 class local_NAS(NAS):
     def __init__(self):
@@ -13,7 +13,8 @@ class local_NAS(NAS):
 
     def open(self, filename):
         path = os.path.join(os.getcwd(), "tmp", filename)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
         realfd = os.open(path, os.O_RDWR | os.O_CREAT)
         newfd = None
         for fd in range(256):
@@ -27,19 +28,21 @@ class local_NAS(NAS):
 
     def read(self, fd, len, offset):
         if fd not in self.fds:
-            raise IOError(f"File descriptor {fd} does not exist.")
+            raise IOError("File descriptor %d does not exist." % fd)
         realfd = self.fds[fd]
-        return os.pread(realfd, len, offset)
+        os.lseek(realfd, offset, os.SEEK_SET)
+        return os.read(realfd, len)
 
     def write(self, fd, data, offset):
         if fd not in self.fds:
-            raise IOError(f"File descriptor {fd} does not exist.")
+            raise IOError("File descriptor %d does not exist." % fd)
         realfd = self.fds[fd]
-        os.pwrite(realfd, data, offset)
+        os.lseek(realfd, offset, os.SEEK_SET)
+        os.write(realfd, data.decode('utf-8'))
 
     def close(self, fd):
         if fd not in self.fds:
-            raise IOError(f"File descriptor {fd} does not exist.")
+            raise IOError("File descriptor %d does not exist." % fd)
         os.close(self.fds[fd])
         del self.fds[fd]
         return
@@ -97,7 +100,7 @@ def main():
     nas = local_NAS()
     usage()
     while True:
-        astr = input('NAS> ')
+        astr = raw_input('NAS> ')
         # print astr
         try:
             args = cli_parser.parse_args(astr.split())
@@ -106,7 +109,7 @@ def main():
                 if len(args.rest) != 1:
                     raise SystemExit
                 fd = nas.open(args.rest[0])
-                print(f"Opened file descriptor {fd} for {args.rest[0]}")
+                print("Opened file descriptor %d for %s" % (fd, args.rest[0]))
                 continue
 
             if args.cmd == 'read' or args.cmd == 'r' or args.cmd == 'readb' or args.cmd == 'rb':
@@ -118,7 +121,7 @@ def main():
                     size = int(args.rest[2])
                 except ValueError:
                     raise SystemExit
-                
+
                 data = nas.read(fd, offset, size)
                 if args.cmd == 'read' or args.cmd == 'r':
                     data = data.decode('utf-8')
@@ -127,7 +130,7 @@ def main():
                         continue
                     sys.stdout.write(data + '<eof>\n')
                 else:
-                    hexdump.hexdump(data)
+                    sys.stdout.write(hexdump(data))
                 continue
 
             if args.cmd == 'write' or args.cmd == 'w' or args.cmd == 'writeb' or args.cmd == 'wb':
@@ -145,9 +148,10 @@ def main():
                     if data[-1] == ord('\n'):
                         data = data[:-1]
                 else:
-                    data = []
+                    data = ""
                     for l in sys.stdin.readlines():
-                        data += hexdump.dehex(l)
+                        for d in l.split():
+                            data += d.decode('hex')
                 nas.write(fd, data, offset)
                 continue
  
@@ -160,14 +164,14 @@ def main():
                 except ValueError:
                     raise SystemExit
                 nas.close(fd)
-                print(f"File descriptor {fd} closed.")
+                print("File descriptor %d closed." % fd)
                 continue
 
             if args.cmd == 'delete' or args.cmd == 'd':
                 if len(args.rest) != 1:
                     raise SystemExit
                 nas.delete(args.rest[0])
-                print(f"File {args.rest[0]} deleted.")
+                print("File %s deleted." % args.rest[0])
                 continue
 
             if args.cmd == 'quit' or args.cmd == 'q':
