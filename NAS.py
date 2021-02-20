@@ -3,6 +3,7 @@ from cloud import RAID_on_Cloud, AWS_S3, Azure_Blob_Storage, Google_Cloud_Storag
 from hexdump import hexdump
 
 import argparse
+import traceback
 import os
 import sys
 import string
@@ -97,7 +98,6 @@ def main():
         'quit',    'q'])
     cli_parser.add_argument('rest', nargs=argparse.REMAINDER)
 
-    nas = local_NAS()
     usage()
     while True:
         astr = raw_input('NAS> ')
@@ -178,9 +178,19 @@ def main():
                 print("Goodbye!!!")
                 break
 
+        except NotImplementedError as e:
+            print("Function not implemented.")
+            usage()
+            continue
+
         except SystemExit:
             # trap argparse error message
-            print("Error!")
+            print("Error.")
+            usage()
+            continue
+
+        except Exception, e:
+            traceback.print_exc()
             usage()
             continue
 
