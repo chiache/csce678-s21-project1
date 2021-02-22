@@ -20,7 +20,9 @@ class Azure_Blob_Storage(cloud_storage):
         self.key = ""
         # TODO: Fill in the Azure connection string
         self.conn_str = ""
-        # TODO: Fill in the blob name
+        # TODO: Fill in the account name
+        self.account_name = "csce678s21"
+        # TODO: Fill in the container name
         self.container_name = ""
 
     # Implement the abstract functions from cloud_storage
