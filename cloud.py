@@ -9,6 +9,8 @@ class AWS_S3(cloud_storage):
         self.access_key_id = ""
         # TODO: Fill in the AWS access secret key
         self.access_secret_key = ""
+        # TODO: Fill in the bucket name
+        self.bucket_name = ""
 
     # Implement the abstract functions from cloud_storage
 
@@ -18,6 +20,8 @@ class Azure_Blob_Storage(cloud_storage):
         self.key = ""
         # TODO: Fill in the Azure connection string
         self.conn_str = ""
+        # TODO: Fill in the blob name
+        self.container_name = ""
 
     # Implement the abstract functions from cloud_storage
 
@@ -25,6 +29,8 @@ class Google_Cloud_Storage(cloud_storage):
     def __init__(self):
         # TODO: Download and place the Credential JSON file
         self.credential_file = "gcp-credential.json"
+        # TODO: Fill in the container name
+        self.bucket_name = ""
 
     # Implement the abstract functions from cloud_storage
 
