@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+find /autograder/submission -name cloud.py -exec cp {} /autograder/grading \;
+
+cd /autograder/grading
+
+git pull
+git submodule update
+
+wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1G7SBEgJBJZZ4Tsie_X45f7KfkroabHGp' -O gcp-credential.json
+
+PYTHONPATH=$PWD python run_tests.py
