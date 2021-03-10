@@ -69,7 +69,7 @@ def usage():
     print("**     rb / readb  <fd> <len> <offset>       **")
     print("**     w  / write  <fd> <offset>             **")
     print("**       (input from the next line)          **")
-    print("**     wb / writeb <fd> <offset> <size>      **")
+    print("**     wb / writeb <fd> <offset>             **")
     print("**       (input from the next line)          **")
     print("**     c  / close  <fd>                      **")
     print("**     d  / delete <filename>                **")
